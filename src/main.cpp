@@ -78,42 +78,51 @@ void loop() {
 
   if(secure){
 
-    lcd.setCursor(6,0);
+    lcd.setCursor(0,0);
+    lcd.print("state:");
+    lcd.setCursor(7,0);
     lcd.print("secure");
 
     if(digitalRead(MOVE) == HIGH){
-      lcd.setCursor(0,0);
-      lcd.print("hight");
+      lcd.setCursor(15,0);
+      lcd.print("1");
 
       //set alarm
       alarm_count = 1;
-      if(alarm_count_start != NULL && alarm_count == 1){
+      if(alarm_count_start == NULL && alarm_count == 1){
         alarm_count_start = millis();
       }
     }
 
     if(digitalRead(MOVE) == LOW){
-      lcd.setCursor(0,0);
-      lcd.print("low  ");
+      lcd.setCursor(15,0);
+      lcd.print("0");
     }
+
+    //alarm delay
+    if(alarm_count && alarm_delay >= 0){
+      if(millis() - alarm_count_start >= 1000){
+        alarm_count_start = millis();
+        lcd.setCursor(14,1);
+        lcd.print("  ");
+        lcd.setCursor(14,1);
+        lcd.print(alarm_delay);
+        alarm_delay--;
+      }
+    }
+  
+    if(alarm_delay <= 0 && digitalRead(MOVE) == HIGH){
+      alarm = 1;
+    }
+  
   }else{
-    lcd.setCursor(6,0);
+    lcd.setCursor(0,0);
+    lcd.print("state:");
+    lcd.setCursor(7,0);
     lcd.print("disable");
     alarm = 0;
   }
-
-  //alarm delay
-  if(alarm_count){
-    if(millis() - alarm_count_start >= 10000){
-      lcd.setCursor(14,1);
-      lcd.print(alarm_count);
-      alarm_delay--;
-    }
-    if(alarm_delay <= 0){
-      alarm = 1;
-    }
-  }
-
+  
   // set alarm
   if (alarm){
     digitalWrite(SPEAKER,HIGH);
@@ -130,8 +139,12 @@ void loop() {
       // code check
       if(admin_pass_check() || user_pass_check()){
         secure = !secure;
+        alarm = 0;
         alarm_count = 0;
+        alarm_delay = ALARM_DELAY;
         alarm_count_start = NULL;
+        lcd.setCursor(14,1);
+        lcd.print('  ');
         lcd.setCursor(0,0);
         lcd.print("     ");
       }
@@ -160,7 +173,6 @@ void loop() {
     digitalWrite(SPEAKER,HIGH);
 
     //unsigned long lastTime = millis();
-
     delay(10);
     digitalWrite(SPEAKER,LOW);
   }
