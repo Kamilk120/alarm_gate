@@ -58,7 +58,7 @@ bool alarm = 0;
 // alarm delay
 bool alarm_count = 0;
 int alarm_delay = ALARM_DELAY;
-unsigned long alarm_count_start;
+unsigned long alarm_count_start = NULL;
 
 //pass
 char admin[MAX] = {'1','2','3','4','5','6','7','8'};
@@ -86,8 +86,10 @@ void loop() {
       lcd.print("hight");
 
       //set alarm
-      alarm_count_start = millis();
       alarm_count = 1;
+      if(alarm_count_start != NULL && alarm_count == 1){
+        alarm_count_start = millis();
+      }
     }
 
     if(digitalRead(MOVE) == LOW){
@@ -102,7 +104,7 @@ void loop() {
 
   //alarm delay
   if(alarm_count){
-    if(millis() - alarm_count_start >= 1000){
+    if(millis() - alarm_count_start >= 10000){
       lcd.setCursor(14,1);
       lcd.print(alarm_count);
       alarm_delay--;
@@ -128,6 +130,8 @@ void loop() {
       // code check
       if(admin_pass_check() || user_pass_check()){
         secure = !secure;
+        alarm_count = 0;
+        alarm_count_start = NULL;
         lcd.setCursor(0,0);
         lcd.print("     ");
       }
